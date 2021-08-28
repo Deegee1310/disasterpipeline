@@ -13,11 +13,6 @@ In this project, It will provide disaster responses to analyze data from [Figure
 
 This project will include a web app where an emergency worker can input a new message and get classification results in several categories. The web app will also display visualizations of the data.
 
-Below are a few screenshots of the web app.
-
-<img src="assets/disaster-response-project1.png" width="80%" alt="disaster response project web app">
-<img src="assets/disaster-response-project2.png" width="80%" alt="disaster response project web app">
-
 ## Files
 
 - ETL Pipeline Preparation.ipynb: Description for workspace/data/process_data.py
