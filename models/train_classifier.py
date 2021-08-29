@@ -27,6 +27,12 @@ from nltk.stem import WordNetLemmatizer
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import fbeta_score, classification_report
 from scipy.stats.mstats import gmean
+from sklearn.model_selection import GridSearchCV
+from sklearn.calibration import CalibratedClassifierCV
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.datasets import make_moons
+from sklearn.pipeline import Pipeline
+from sklearn.feature_selection import SelectKBest
 
 nltk.download(['punkt', 'wordnet', 'averaged_perceptron_tagger'])
 
@@ -99,26 +105,18 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
         return pd.DataFrame(X_tagged)
 
 def build_model():
-    """
-    Build Model function
-    
-    This function output is a Scikit ML Pipeline that process text messages
-    according to NLP best-practice and apply a classifier.
-    """
-    model = Pipeline([
-        ('features', FeatureUnion([
-
-            ('text_pipeline', Pipeline([
-                ('vect', CountVectorizer(tokenizer=tokenize)),
-                ('tfidf', TfidfTransformer())
-            ])),
-
-            ('starting_verb', StartingVerbExtractor())
-        ])),
-
-        ('clf', MultiOutputClassifier(AdaBoostClassifier()))
+    pipeline = Pipeline([
+        ('vect', CountVectorizer(tokenizer=tokenize)),
+        ('tfidf', TfidfTransformer()),
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
-
+    # parameters set to this due to reduce the size of pkl file, which were too large (600MB) for uploading to github with my previous parameters.
+    parameters = {
+        'clf__estimator__n_estimators': [10],
+        'clf__estimator__min_samples_split': [2],
+    
+    }
+    model = GridSearchCV(pipeline, param_grid=parameters, n_jobs=4, verbose=2, cv=3)
     return model
 
 def multioutput_fscore(y_true,y_pred,beta=1):
@@ -179,9 +177,11 @@ def evaluate_model(model, X_test, Y_test, category_names):
     print('F1 score (custom definition) {0:.2f}%\n'.format(multi_f1*100))
 
     # Print the whole classification report.
-    # Extremely long output
-    # Work In Progress: Save Output as Text file!
-    
+    test_pred = model.predict(X_test) 
+
+    for i in range(len(category_names)): 
+      print(category_names[i]) 
+      print(classification_report(Y_test[category_names[i]], test_pred[:, i]))
     #Y_pred = pd.DataFrame(Y_pred, columns = Y_test.columns)
     
     #for column in Y_test.columns:

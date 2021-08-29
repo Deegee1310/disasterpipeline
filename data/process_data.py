@@ -49,7 +49,8 @@ def clean_data(df):
     df = df.drop('categories',axis=1)
     df = pd.concat([df,categories],axis=1)
     #df = pd.concat([df,pd.get_dummies(df.genre)],axis=1)
-    #df = df.drop(['genre','social'],axis=1) 
+    #df = df.drop(['genre','social'],axis=1)
+    df.loc[df['related'] > 1,'related'] = 1
     df = df.drop_duplicates()
     return df
 
@@ -62,7 +63,7 @@ def save_data(df, database_filename):
         database_filename -> database file (.db) destination path
     """
     engine = create_engine('sqlite:///'+ database_filename)
-    df.to_sql('df', engine, index=False)
+    df.to_sql('df', engine, index=False, if_exists='replace')
     pass  
 
 
